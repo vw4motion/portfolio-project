@@ -15,13 +15,10 @@ Thanks for using the Sports World Central API. This is your one-stop-shop for ac
 - [Example Code](#example-code)
 - [Software Development Kit (SDK)](#software-development-kit-sdk)
 
-## Public API
+## Public API 
+*Coming Soon*
 
-Our API is hosted at [API URL]/([API URL]/). 
-
-You can access the interactive documentation at [[API URL]/docs]([API URL]/docs).
-
-You can view the OpenAPI Specification (OAS) file at [[API URL]/openapi.json]([API URL]/openapi.json).
+We'll be deploying our application soon. Check back for the public API address.
 
 ## Getting Started
 

@@ -1,1 +1,1 @@
-# Chapter 6 - Reinforcing Your API
+# Chapter 6 - Deploying Your API to the Cloud
