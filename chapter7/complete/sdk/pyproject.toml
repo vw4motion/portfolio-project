@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "PySWC"
 version = "0.0.7"
 authors = [
-  {name="Ryan Day"},
+  {name="[YOUR NAME]"},
 ]
 description = "Example Software Development Kit (SDK) from Hands-On API Book for AI and Data Science"
 requires-python = ">=3.10"
