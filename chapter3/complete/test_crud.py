@@ -37,6 +37,14 @@ def test_get_all_performances(db_session):
     performances = crud.get_performances(db_session, skip=0, limit=10000)
     assert len(performances) == 1100
 
+def test_get_league(db_session):
+    """Tests you can get a league"""
+    league = crud.get_league(db_session, league_id = 5002)
+    assert league.league_id == 5002
+    assert len(league.teams) == 8
+
+
+
 def test_get_leagues(db_session):
     """Tests that the count of leagues in the database is what is expected"""
     leagues = crud.get_leagues(db_session, skip=0, limit=10000, min_last_changed_date=test_date)
@@ -47,6 +55,12 @@ def test_get_teams(db_session):
     """Tests that the count of teams in the database is what is expected"""
     teams = crud.get_teams(db_session, skip=0, limit=10000, min_last_changed_date=test_date)
     assert len(teams) == 20
+
+def test_get_teams_for_one_league(db_session):
+    """Tests that the count of teams in the database is what is expected"""
+    teams = crud.get_teams(db_session, league_id=5001)
+    assert len(teams) == 12
+    assert teams[0].league_id == 5001
 
 def test_get_team_players(db_session):
     """Tests that a team record can retrieve players, and that 8 players are on the first team"""
