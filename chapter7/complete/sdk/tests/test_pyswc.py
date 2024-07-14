@@ -1,13 +1,17 @@
 import pytest
-from pyswc import SWCClient
-from pyswc import SWCConfig
-from pyswc.schemas import League, Team, Player, Performance
+from swcpy import SWCClient
+from swcpy import SWCConfig
+from swcpy.schemas import League, Team, Player, Performance
+from io import BytesIO
+import pyarrow.parquet as pq
+import pandas as pd
 import csv
 import os
 from io import StringIO
 
 current_dir = os.path.dirname(__file__)
 data_dir = current_dir + "/test_data_output/"
+
 
 """Unit tests for PYSWC SDK
 
@@ -21,20 +25,21 @@ Typical usage example:
 """
 
 
-config = SWCConfig(url="http://127.0.0.1:8000",backoff=False)
+config = SWCConfig(url="http://0.0.0.0:8000",backoff=False)
 client = SWCClient(config)    
+
 
 def test_health_check():
     """Tests health check from SDK"""
-    config = SWCConfig()
-    client = SWCClient(config)
+    config = SWCConfig(url="http://0.0.0.0:8000",backoff=False)
+    client = SWCClient(config)    
     response = client.get_health_check()
     assert response.status_code == 200
     assert response.json() == {"message": "API health check successful"}
 
 def test_health_check_with_URL():
     """Tests health check from SDK"""
-    config = SWCConfig(url="http://127.0.0.1:8000")
+    config = SWCConfig(url="http://0.0.0.0:8000")
     client = SWCClient(config)    
     response = client.get_health_check()
     assert response.status_code == 200
@@ -42,19 +47,20 @@ def test_health_check_with_URL():
 
 def test_list_leagues():
     """Tests get leagues from SDK"""
-    config = SWCConfig(url="http://127.0.0.1:8000")
+    config = SWCConfig(url="http://0.0.0.0:8000",backoff=False)
     client = SWCClient(config)    
     leagues_response = client.list_leagues()
-    # Assert the list is not empty
+    # Assert the endpoint returned a list object
     assert isinstance(leagues_response, list)
-    # Assert each item in the list is an instance of League
+    # Assert each item in the list is an instance of Pydantic League object
     for league in leagues_response:
         assert isinstance(league, League)
+    # Asset that 5 League objects are returned
     assert len(leagues_response) == 5
 
 def test_list_leagues_no_backoff():
     """Tests get leagues from SDK without backoff"""
-    config = SWCConfig(url="http://127.0.0.1:8000",backoff=False)
+    config = SWCConfig(url="http://0.0.0.0:8000",backoff=False)
     client = SWCClient(config)    
     leagues_response = client.list_leagues()
     # Assert the list is not empty
@@ -103,14 +109,14 @@ def test_list_teams():
 def test_list_players():
     """Tests get players from SDK"""
     
-    players_response = client.list_players(skip=0,limit=600)
+    players_response = client.list_players(skip=0,limit=1500)
 
     # Assert the list is not empty
     assert isinstance(players_response, list)
     # Assert each item in the list is an instance of League
     for player in players_response:
         assert isinstance(player, Player)
-    assert len(players_response) == 550
+    assert len(players_response) == 1018
 
 
 def test_list_players_by_name():
@@ -123,13 +129,13 @@ def test_list_players_by_name():
     for player in players_response:
         assert isinstance(player, Player)
     assert len(players_response) == 1
-    assert players_response[0].player_id == 102
+    assert players_response[0].player_id == 2009
 
 
 def test_get_player_by_id():
     """Tests get player by ID from SDK"""
 
-    player_response = client.get_player_by_id(102)
+    player_response = client.get_player_by_id(2009)
 
     assert isinstance(player_response, Player)
     assert player_response.first_name == "Bryce"       
@@ -138,7 +144,7 @@ def test_get_player_by_id():
 def test_list_performances():
     """Tests get peformances from SDK"""
 
-    performances_response = client.list_performances(skip=0,limit=2000)
+    performances_response = client.list_performances(skip=0,limit=20000)
 
 
     # Assert the list is not empty
@@ -146,24 +152,37 @@ def test_list_performances():
     # Assert each item in the list is an instance of League
     for performance in performances_response:
         assert isinstance(performance, Performance)
-    assert len(performances_response) == 1100
+    assert len(performances_response) == 17306
 
 
 #test /v0/performances/ with changed date
 def test_list_performances_by_date():
     """Tests get peformances from SDK"""
     
-    performances_response = client.list_performances(skip=0,limit=2000,minimum_last_changed_date="2024-04-01")
+    performances_response = client.list_performances(skip=0,limit=3000,minimum_last_changed_date="2024-04-01")
 
     # Assert the list is not empty
     assert isinstance(performances_response, list)
     # Assert each item in the list is an instance of League
     for performance in performances_response:
         assert isinstance(performance, Performance)
-    assert len(performances_response) == 550
+    assert len(performances_response) == 2711
 
 
-#bulk endpoints
+#bulk file tests
+def test_bulk_player_file_parquet():
+    """Tests bulk player download through SDK - Parquet"""
+
+    config = SWCConfig(bulk_file_format = "parquet")
+    client = SWCClient(config)    
+
+    player_file_parquet = client.get_bulk_player_file()
+
+    # Assert the file has the correct number of records (including header)
+    player_table = pq.read_table(BytesIO(player_file_parquet))
+    player_df = player_table.to_pandas()
+    assert len(player_df) == 1018
+
 def test_bulk_player_file():
     """Tests bulk player download through SDK"""
 
@@ -186,7 +205,7 @@ def test_bulk_player_file():
 
     # Assert the file has the correct number of records (including header)
     rows = list(csv_reader)
-    assert len(rows) == 551
+    assert len(rows) == 1019
 
     # Additional check: ensure the first row is the header
     assert rows[0] == ['player_id','gsis_id','first_name','last_name','position','last_changed_date']
@@ -215,7 +234,7 @@ def test_bulk_league_file():
     assert len(rows) == 6
 
     # Additional check: ensure the first row is the header
-    assert rows[0] == ['league_id','league_name','scoring_type','last_change_date']
+    assert rows[0] == ['league_id','league_name','scoring_type','last_changed_date']
 
 def test_bulk_performance_file():
     """Tests bulk performance download through SDK"""
@@ -238,10 +257,10 @@ def test_bulk_performance_file():
 
     # Assert the file has the correct number of records (including header)
     rows = list(csv_reader)
-    assert len(rows) == 1101
+    assert len(rows) == 17307
 
     # Additional check: ensure the first row is the header
-    assert rows[0] == ['performance_id','week_number','fantasy_points','player_id','last_change_date']
+    assert rows[0] == ['performance_id','week_number','fantasy_points','player_id','last_changed_date']
 
 def test_bulk_team_file():
     """Tests bulk team download through SDK"""
@@ -267,7 +286,7 @@ def test_bulk_team_file():
     assert len(rows) == 21
 
     # Additional check: ensure the first row is the header
-    assert rows[0] == ['team_id','team_name','league_id','last_change_date']
+    assert rows[0] == ['team_id','team_name','league_id','last_changed_date']
 
 def test_bulk_team_player_file():
     """Tests bulk team_player download through SDK"""
@@ -293,4 +312,4 @@ def test_bulk_team_player_file():
     assert len(rows) == 141
 
     # Additional check: ensure the first row is the header
-    assert rows[0] == ['team_id','player_id','last_change_date']
+    assert rows[0] == ['team_id','player_id','last_changed_date']
