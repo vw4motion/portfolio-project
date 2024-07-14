@@ -1,11 +1,11 @@
-# Pyswc software development kit (SDK)
+# swcpy software development kit (SDK)
 This is the python SDK to to interact with the SportsWorldCentral Football API, which was created for the book [Hands-On APIs for AI and Data Science](https://hands-on-api-book.com).
 
-## Installing pyswc
+## Installing swcpy
 
 To install this SDK in your environment, execute the following command:
 
-`pip install pyswc@git+https://github.com/{owner of repo}/portfolio-project#subdirectory=chapter7/sdk`
+`pip install swcpy@git+https://github.com/{owner of repo}/portfolio-project#subdirectory=sdk`
 
 ## Example Usage
 
@@ -16,8 +16,8 @@ This SDK implements all the endpoints in the SWC API, in addition to providing b
 To call the SDK functions for normal API endpoints, here is an example:
 
 ```python
-from pyswc import SWCClient
-from pyswc import SWCConfig
+from swcpy import SWCClient
+from swcpy import SWCConfig
 
 config = SWCConfig(url="http://127.0.0.1:8000",backoff=False)
 client = SWCClient(config)    
