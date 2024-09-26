@@ -12,6 +12,8 @@ from io import StringIO
 current_dir = os.path.dirname(__file__)
 data_dir = current_dir + "/test_data_output/"
 
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
 
 """Unit tests for PYSWC SDK
 
