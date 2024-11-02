@@ -28,9 +28,11 @@ class SWCClient:
     GET_COUNTS_ENDPOINT = "/v0/counts/"
 
     BULK_FILE_BASE_URL = (
-        "https://raw.githubusercontent.com/[your Github ID]"
+        "https://raw.githubusercontent.com/[github ID]"
         + "/portfolio-project/main/bulk/"
     )
+
+
 
     def __init__(self, input_config: config.SWCConfig):
         """Class constructor that sets varibles from configuration object."""
