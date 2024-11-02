@@ -1,10 +1,13 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 class SWCConfig:
     """Configuration class containing arguments for the SDK client.
 
     Contains configuration for the base URL and progressive backoff.
     """
-
-    DEFAULT_URL = "https://api.sportsworldcentral.com"
 
     swc_base_url: str
     swc_backoff: bool
@@ -13,7 +16,7 @@ class SWCConfig:
 
     def __init__(
         self,
-        url: str = DEFAULT_URL,
+        swc_base_url: str = None,
         backoff: bool = True,
         backoff_max_time: int = 30,
         bulk_file_format: str = "csv",
@@ -24,7 +27,7 @@ class SWCConfig:
 
         Args:
         swc_base_url (optional):
-            The base URL to use for all the API calls.
+            The base URL to use for all the API calls. Pass this in or set in environment variable.
         swc_backoff:
             A boolean that determines if the SDK should
             retry the call using backoff when errors occur.
@@ -35,7 +38,13 @@ class SWCConfig:
             If bulk files should be in csv or parquet format.
         """
 
-        self.swc_base_url = url
+        self.swc_base_url = swc_base_url or os.getenv("SWC_API_BASE_URL")
+        print(f"SWC_API_BASE_URL in SWCConfig init: {self.swc_base_url}")  
+
+
+        if not self.swc_base_url:
+            raise ValueError("Base URL is required. Set SWC_API_BASE_URL environment variable.")
+
         self.swc_backoff = backoff
         self.swc_backoff_max_time = backoff_max_time
         self.swc_bulk_file_format = bulk_file_format
