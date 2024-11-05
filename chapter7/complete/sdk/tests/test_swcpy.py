@@ -8,6 +8,9 @@ import pandas as pd
 import csv
 import os
 from io import StringIO
+from dotenv import load_dotenv
+
+
 
 current_dir = os.path.dirname(__file__)
 data_dir = current_dir + "/test_data_output/"
@@ -26,22 +29,24 @@ Typical usage example:
 
 """
 
-
-config = SWCConfig(url="http://0.0.0.0:8000",backoff=False)
+config = SWCConfig(backoff=False)
 client = SWCClient(config)    
+
+def test_environment_variable():
+    import os
+
+    # Retrieve the environment variable
+    swc_base_url = os.getenv('SWC_API_BASE_URL')
+
+    # Print the value of the environment variable
+    print(f"API_BASE_URL: {swc_base_url}")
+    # Check if the environment variable is set correctly
+    assert(swc_base_url == 'http://0.0.0.0:8000')
 
 
 def test_health_check():
     """Tests health check from SDK"""
-    config = SWCConfig(url="http://0.0.0.0:8000",backoff=False)
-    client = SWCClient(config)    
-    response = client.get_health_check()
-    assert response.status_code == 200
-    assert response.json() == {"message": "API health check successful"}
-
-def test_health_check_with_URL():
-    """Tests health check from SDK"""
-    config = SWCConfig(url="http://0.0.0.0:8000")
+    config = SWCConfig(backoff=False)
     client = SWCClient(config)    
     response = client.get_health_check()
     assert response.status_code == 200
@@ -49,7 +54,7 @@ def test_health_check_with_URL():
 
 def test_list_leagues():
     """Tests get leagues from SDK"""
-    config = SWCConfig(url="http://0.0.0.0:8000",backoff=False)
+    config = SWCConfig(backoff=False)
     client = SWCClient(config)    
     leagues_response = client.list_leagues()
     # Assert the endpoint returned a list object
@@ -62,7 +67,6 @@ def test_list_leagues():
 
 def test_list_leagues_no_backoff():
     """Tests get leagues from SDK without backoff"""
-    config = SWCConfig(url="http://0.0.0.0:8000",backoff=False)
     client = SWCClient(config)    
     leagues_response = client.list_leagues()
     # Assert the list is not empty
